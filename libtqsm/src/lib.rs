@@ -62,10 +62,10 @@ pub struct IncrementalSegmenter {
 
 impl IncrementalSegmenter {
     // Initialize with a language code
-    pub fn new(lang_code: &'static str) -> Result<Self> {
-        let language = match get_language(&lang_code) {
+    pub fn new<S: AsRef<str>>(lang_code: S) -> Result<Self> {
+        let language = match get_language(lang_code.as_ref()) {
             Some(language) => language,
-            None => bail!("Language `{}` not supported", lang_code),
+            None => bail!("Language `{}` not supported", lang_code.as_ref())
         };
 
         Ok(IncrementalSegmenter {
@@ -91,7 +91,7 @@ impl IncrementalSegmenter {
     }
 }
 
-fn get_language(lang_code: &str) -> Option<&(dyn Language + Send + Sync + 'static)> {
+fn get_language<'a>(lang_code: &'a str) -> Option<&'static (dyn Language + Send + Sync)> {
     let mut ret_lang = LANGUAGE_REGISTRY.get(lang_code).copied();
     if ret_lang.is_none() {
         let fallbacks = LANGUAGE_FALLBACKS
